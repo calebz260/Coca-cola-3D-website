@@ -1,0 +1,19 @@
+{
+  "name": "contour-coca-cola-concept",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Interactive 3D Coca-Cola concept site: React + Three.js frontend, Express + Prisma + PostgreSQL API.",
+  "scripts": {
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:migrate": "npm --prefix server run db:migrate",
+    "dev": "node scripts/dev.mjs",
+    "typecheck": "npm --prefix client run typecheck && npm --prefix server run typecheck",
+    "test": "npm --prefix server test",
+    "test:e2e": "npm --prefix client run test:e2e",
+    "build": "npm --prefix client run build && npm --prefix server run build"
+  },
+  "dependencies": {
+    "motion": "^14.12.0"
+  }
+}

@@ -1,0 +1,22 @@
+# Local PostgreSQL for development. Credentials here are for your machine only.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: contour-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: contour
+      POSTGRES_PASSWORD: contour_dev_password
+      POSTGRES_DB: contour
+    ports:
+      - '5433:5432'
+    volumes:
+      - contour-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U contour -d contour']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  contour-pgdata:

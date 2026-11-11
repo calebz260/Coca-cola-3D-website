@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.log
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Test output
+client/test-results/
+client/playwright-report/
+client/e2e/screenshots/
+coverage/
+
+.DS_Store
+Thumbs.db

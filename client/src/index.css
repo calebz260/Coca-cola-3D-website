@@ -1,0 +1,74 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-signal: #e3101f;
+  --color-signal-deep: #b80d19;
+  --color-cellar: #3a0509;
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+  --color-caramel: #6b2a10;
+
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --font-sans: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+
+  /* Perfect-fourth scale from an 18px base. */
+  --text-body: 1.125rem;
+  --text-lead: 1.5rem;
+  --text-h3: 2rem;
+  --text-h2: clamp(2.625rem, 6vw, 4.6875rem);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 4.5rem;
+    /* Horizontal drags reach the 3D bottle; vertical swipes still scroll; pinch still zooms. */
+    touch-action: pan-y pinch-zoom;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-ink text-paper font-sans antialiased;
+    font-size: var(--text-body);
+    line-height: 1.55;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-paper);
+    color: var(--color-signal);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-paper);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Content that must sit above the fixed 3D canvas (z-index 1). */
+  .above-stage {
+    position: relative;
+    z-index: 2;
+  }
+  /* Opaque rooms that hide the canvas while they are on screen. */
+  .room {
+    position: relative;
+    z-index: 3;
+  }
+  .display {
+    font-family: var(--font-display);
+    font-weight: 900;
+    line-height: 0.86;
+    letter-spacing: -0.01em;
+  }
+}
