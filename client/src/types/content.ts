@@ -10,6 +10,8 @@ export interface Variant {
   /** Label type and ribbon colour. */
   ink: string;
   cap: string;
+  /** Colour of the lettering printed on the glass. */
+  print: string;
   liquid: string;
 }
 

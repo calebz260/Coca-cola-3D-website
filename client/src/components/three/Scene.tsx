@@ -83,7 +83,7 @@ function BottleRig({ quality, reducedMotion, burst }: RigProps) {
 
     const scale = (rig.height * viewport.height) / BOTTLE_HEIGHT;
     const targetX = (rig.x * viewport.width) / 2;
-    const targetY = (rig.y * viewport.height) / 2 - rig.intro * viewport.height;
+    const targetY = ((rig.y + rig.lift) * viewport.height) / 2 - rig.intro * viewport.height;
     const k = reducedMotion ? 20 : 5;
     g.position.x = THREE.MathUtils.damp(g.position.x, targetX, k, dt);
     g.position.y = THREE.MathUtils.damp(g.position.y, targetY, k, dt);
@@ -116,7 +116,7 @@ function BottleRig({ quality, reducedMotion, burst }: RigProps) {
         >
           <Bottle variant={variant} segments={quality === 'high' ? 128 : 64} />
           <Bubbles count={quality === 'high' ? 110 : 45} burst={burst} still={reducedMotion} />
-          <Condensation count={quality === 'high' ? 220 : 90} chilled={chilled} />
+          <Condensation count={quality === 'high' ? 520 : 180} chilled={chilled} />
         </group>
         {quality === 'high' && (
           <ContactShadows position={[0, 0.001, 0]} scale={2.2} far={1.2} blur={2.4} opacity={0.55} resolution={256} color="#200000" />
@@ -131,12 +131,12 @@ function Lighting() {
     <>
       <ambientLight intensity={0.35} />
       <directionalLight position={[3, 5, 4]} intensity={2.2} />
-      <pointLight position={[-3, -1, -2]} intensity={14} color="#ff3040" distance={10} />
+      <pointLight position={[-3, -1, -2]} intensity={4} color="#ff5a3a" distance={10} />
       <Environment resolution={256} frames={1}>
         <Lightformer form="rect" intensity={5} position={[0, 4, 3]} scale={[8, 1.2, 1]} rotation-x={Math.PI / 2} />
         <Lightformer form="rect" intensity={3.5} position={[-3.2, 0.4, 2]} rotation-y={Math.PI / 2.6} scale={[0.5, 9, 1]} />
         <Lightformer form="rect" intensity={2.5} position={[3.2, 0.4, 2]} rotation-y={-Math.PI / 2.6} scale={[0.35, 9, 1]} />
-        <Lightformer form="rect" color="#ff2a3a" intensity={2} position={[0, -1, -5]} scale={[12, 5, 1]} />
+        <Lightformer form="rect" color="#ff2a3a" intensity={0.8} position={[0, -1, -5]} scale={[12, 5, 1]} />
       </Environment>
     </>
   );

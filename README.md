@@ -27,7 +27,7 @@ npm --prefix client install
 # 4. Create the table
 npm run db:migrate
 
-# 5. Run API (http://localhost:5050) and site (http://localhost:5173) together
+# 5. Run API (http://localhost:5050) and site (http://localhost:5273) together
 npm run dev
 ```
 

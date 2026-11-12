@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import {
-  BOTTLE_HEIGHT,
+  FILL_HEIGHT,
   LABEL_RANGE,
   bandProfile,
+  fluteScale,
   liquidProfile,
+  radiusAt,
   sampleProfile,
 } from '../../lib/bottleProfile';
 import type { Variant } from '../../types/content';
@@ -12,37 +14,85 @@ import { createLabelTexture } from './labelTexture';
 
 const toVec2 = (pts: [number, number][]) => pts.map(([r, y]) => new THREE.Vector2(r, y));
 
+/** Press the vertical flutes into a lathe-turned surface. */
+function flute(geometry: THREE.BufferGeometry) {
+  const pos = geometry.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    const k = fluteScale(y, Math.atan2(x, z));
+    pos.setXYZ(i, x * k, y, z * k);
+  }
+  pos.needsUpdate = true;
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/** Inside of the empty neck, above the cola: reads as thick, green-tinted glass. */
+function neckProfile(steps = 16): [number, number][] {
+  const top = 3.04;
+  const out: [number, number][] = [];
+  for (let i = 0; i <= steps; i++) {
+    const y = FILL_HEIGHT + ((top - FILL_HEIGHT) * i) / steps;
+    out.push([radiusAt(y) * 0.86, y]);
+  }
+  return out;
+}
+
+/** Crown cap: domed top and a skirt crimped into 21 teeth. Origin at the skirt's bottom edge. */
+function crownCap(segments: number) {
+  const profile: [number, number][] = [
+    [0.234, 0],
+    [0.24, 0.02],
+    [0.236, 0.075],
+    [0.226, 0.105],
+    [0.205, 0.125],
+    [0.12, 0.134],
+    [0, 0.136],
+  ];
+  const geometry = new THREE.LatheGeometry(toVec2(profile), segments);
+  const pos = geometry.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    if (y > 0.11) continue;
+    const teeth = Math.pow(Math.abs(Math.cos((Math.atan2(x, z) * 21) / 2)), 3);
+    const k = 1 + 0.07 * teeth * (1 - y / 0.11);
+    pos.setXYZ(i, x * k, y, z * k);
+  }
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
 interface Props {
   variant: Variant;
   segments: number;
 }
 
 /**
- * The contour bottle, turned on a lathe from the shared profile: glass shell, liquid volume,
- * label sleeve and crimped cap. Origin is the centre of the base.
+ * The glass contour bottle, modelled on the classic returnable: fluted glass, cola filled to
+ * the neck, lettering printed straight onto the glass and a crimped crown cap.
+ * Origin is the centre of the base.
  */
 export function Bottle({ variant, segments }: Props) {
   const geometry = useMemo(() => {
-    const glass = new THREE.LatheGeometry(toVec2(sampleProfile(10)), segments);
-    const liquid = new THREE.LatheGeometry(toVec2(liquidProfile()), Math.round(segments * 0.66));
-    const label = new THREE.LatheGeometry(toVec2(bandProfile(LABEL_RANGE)), segments);
-    const cap = new THREE.CylinderGeometry(0.17, 0.178, 0.12, 21, 1);
-    return { glass, liquid, label, cap };
+    const glass = flute(new THREE.LatheGeometry(toVec2(sampleProfile(10)), segments));
+    const liquid = flute(new THREE.LatheGeometry(toVec2(liquidProfile(0.965)), segments));
+    const neck = new THREE.LatheGeometry(toVec2(neckProfile()), Math.round(segments * 0.5));
+    const label = new THREE.LatheGeometry(toVec2(bandProfile(LABEL_RANGE, 1.006)), segments);
+    const cap = crownCap(Math.max(84, segments));
+    return { glass, liquid, neck, label, cap };
   }, [segments]);
 
-  useEffect(
-    () => () => Object.values(geometry).forEach((g) => g.dispose()),
-    [geometry],
-  );
+  useEffect(() => () => Object.values(geometry).forEach((g) => g.dispose()), [geometry]);
 
-  // Paint the label once the display font has loaded, so the wordmark uses the right face.
+  // Paint the lettering once the script face has loaded.
   const [fontsReady, setFontsReady] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      document.fonts.load('900 200px "Big Shoulders Display"'),
-      document.fonts.load('600 58px "Hanken Grotesk"'),
-    ])
+    Promise.all([document.fonts.load('400 160px "Yellowtail"'), document.fonts.load('600 40px "Hanken Grotesk"')])
       .catch(() => undefined)
       .finally(() => !cancelled && setFontsReady(true));
     return () => {
@@ -55,44 +105,73 @@ export function Bottle({ variant, segments }: Props) {
 
   return (
     <group>
-      {/* Liquid first: it is opaque and is seen through the glass. */}
+      {/* Cola: deep red that glows where the light passes through. Seen through the glass. */}
       <mesh geometry={geometry.liquid} renderOrder={0}>
         <meshPhysicalMaterial
           color={variant.liquid}
-          emissive="#3a0e02"
+          emissive={variant.liquid}
           emissiveIntensity={0.55}
-          roughness={0.12}
+          roughness={0.08}
           metalness={0}
           clearcoat={1}
-          clearcoatRoughness={0.06}
-          envMapIntensity={1.2}
-          sheen={0.6}
-          sheenColor="#a8401a"
+          clearcoatRoughness={0.04}
+          envMapIntensity={1.6}
+          sheen={0.3}
+          sheenRoughness={0.35}
+          sheenColor="#c0300e"
         />
       </mesh>
 
-      <mesh geometry={geometry.label} renderOrder={1}>
-        <meshPhysicalMaterial map={labelTexture} roughness={0.32} clearcoat={0.6} envMapIntensity={0.9} />
-      </mesh>
-
-      {/* Georgia-green glass: thin, reflective and see-through to the page behind it. */}
-      <mesh geometry={geometry.glass} renderOrder={2}>
+      <mesh geometry={geometry.neck} renderOrder={1}>
         <meshPhysicalMaterial
-          color="#dff3e8"
+          color="#0b2116"
           transparent
-          opacity={0.24}
-          roughness={0.03}
-          metalness={0.05}
+          opacity={0.8}
+          roughness={0.1}
           clearcoat={1}
-          clearcoatRoughness={0.02}
-          envMapIntensity={2.6}
+          envMapIntensity={1.4}
           depthWrite={false}
           side={THREE.DoubleSide}
         />
       </mesh>
 
-      <mesh geometry={geometry.cap} position={[0, BOTTLE_HEIGHT + 0.05, 0]}>
-        <meshStandardMaterial color={variant.cap} metalness={0.65} roughness={0.32} flatShading />
+      {/* Thin glass with a faint green tint, bright reflections on the flutes. */}
+      <mesh geometry={geometry.glass} renderOrder={2}>
+        <meshPhysicalMaterial
+          color="#cfe9da"
+          transparent
+          opacity={0.13}
+          roughness={0.02}
+          metalness={0.05}
+          clearcoat={1}
+          clearcoatRoughness={0.01}
+          envMapIntensity={3}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+
+      {/* Lettering printed on the outside of the glass. */}
+      <mesh geometry={geometry.label} renderOrder={3}>
+        <meshStandardMaterial
+          map={labelTexture}
+          transparent
+          alphaTest={0.02}
+          roughness={0.35}
+          envMapIntensity={0.8}
+          depthWrite={false}
+        />
+      </mesh>
+
+      <mesh geometry={geometry.cap} position={[0, 2.965, 0]}>
+        <meshPhysicalMaterial
+          color={variant.cap}
+          metalness={0.55}
+          roughness={0.28}
+          clearcoat={0.8}
+          clearcoatRoughness={0.15}
+          envMapIntensity={1.6}
+        />
       </mesh>
     </group>
   );

@@ -23,8 +23,8 @@ test.describe('Contour site', () => {
     const errors = trackErrors(page);
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/Ice-cold/i);
-    await expect(page.locator('canvas')).toHaveCount(1, { timeout: 20_000 });
-    const box = await page.locator('canvas').boundingBox();
+    await expect(page.getByTestId('stage-canvas').locator('canvas')).toHaveCount(1, { timeout: 20_000 });
+    const box = await page.getByTestId('stage-canvas').locator('canvas').boundingBox();
     expect(box?.width).toBeGreaterThan(200);
 
     for (const id of ['story', 'products', 'experience', 'contact']) {
@@ -47,7 +47,8 @@ test.describe('Contour site', () => {
     } else {
       await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Products' }).click();
     }
-    await expect(page.locator('#products')).toBeInViewport({ ratio: 0.3 });
+    // The section is several screens tall now, so check its heading arrived rather than a share of the section.
+    await expect(page.getByRole('heading', { name: 'Pick a bottle' })).toBeInViewport();
     if (!mobileNav) {
       await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Products' })).toHaveAttribute(
         'aria-current',
@@ -63,7 +64,11 @@ test.describe('Contour site', () => {
     await vanilla.click();
     await expect(vanilla).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('button', { name: 'See Vanilla in 3D' }).click();
-    await expect(page.locator('#experience')).toBeInViewport({ ratio: 0.5 });
+    // The block's top has scrolled up to the header (allow for the scroll padding under the fixed nav).
+    await expect
+      .poll(() => page.locator('#experience').evaluate((el) => Math.round(el.getBoundingClientRect().top)))
+      .toBeLessThan(120);
+    await expect(page.getByRole('heading', { name: 'Vanilla', level: 3 })).toBeInViewport();
     await expect(page.getByRole('radio', { name: 'Vanilla' })).toBeChecked();
   });
 
@@ -83,11 +88,21 @@ test.describe('Contour site', () => {
     await expect(chill).toHaveAttribute('aria-checked', 'false');
 
     if (!isMobile) {
+      // Clicking the controls may have scrolled the page (they sit below the fold on tablets); come back to the bottle.
+      await scrollToSection(page, 'experience');
       // Drag across the bottle; the cursor switches to grabbing while the bottle is held.
       const vp = page.viewportSize()!;
-      const x = vp.width >= 1025 ? vp.width * 0.35 : vp.width * 0.5;
+      // The bottle stands in the left column on desktop (27% across), centred above the details below that.
+      const x = vp.width >= 1025 ? vp.width * 0.27 : vp.width * 0.5;
       const y = vp.width >= 1025 ? vp.height * 0.5 : vp.height * 0.33;
-      await page.mouse.move(x, y);
+      // The bottle eases into place after scrolling; wait until it is under the pointer.
+      await expect
+        .poll(async () => {
+          await page.mouse.move(x + 1, y);
+          await page.mouse.move(x, y);
+          return page.evaluate(() => document.documentElement.style.cursor);
+        })
+        .toBe('grab');
       await page.mouse.down();
       await page.mouse.move(x + 120, y, { steps: 6 });
       const cursor = await page.evaluate(() => document.documentElement.style.cursor);
@@ -116,7 +131,7 @@ test.describe('Contour site', () => {
 
 test('screenshots for visual review', async ({ page }, info) => {
   await page.goto('/');
-  await expect(page.locator('canvas')).toHaveCount(1, { timeout: 20_000 });
+  await expect(page.getByTestId('stage-canvas').locator('canvas')).toHaveCount(1, { timeout: 20_000 });
   await page.waitForTimeout(2600);
   const dir = `e2e/screenshots/${info.project.name}`;
   await page.screenshot({ path: `${dir}/1-hero.png` });

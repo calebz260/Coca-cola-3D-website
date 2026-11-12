@@ -6,6 +6,7 @@
  * height : bottle height as a fraction of the viewport height
  * tilt   : lean in radians (z axis)
  * intro  : entrance offset, 1 = below the fold, 0 = in place
+ * lift   : extra upward offset in half-viewports, used to scroll the bottle away with the page
  */
 export interface Pose {
   x: number;
@@ -14,23 +15,25 @@ export interface Pose {
   tilt: number;
 }
 
-export const rig: Pose & { intro: number } = { x: 0.42, y: -0.02, height: 0.8, tilt: 0, intro: 1 };
+export const rig: Pose & { intro: number; lift: number } = { x: 0.46, y: -0.07, height: 0.72, tilt: 0, intro: 1, lift: 0 };
 
 export const POSES: Record<'desktop' | 'tablet' | 'mobile', Record<'hero' | 'story' | 'experience', Pose>> = {
   desktop: {
-    // Overlaps the end of the headline on purpose: the bottle stands in front of the type.
-    hero: { x: 0.25, y: -0.07, height: 0.76, tilt: 0.06 },
-    story: { x: -0.5, y: -0.06, height: 0.74, tilt: -0.12 },
-    experience: { x: -0.3, y: -0.06, height: 0.76, tilt: 0 },
+    // Upright, right of the headline, in front of the black hole's ring.
+    hero: { x: 0.46, y: -0.07, height: 0.72, tilt: 0 },
+    // Left of the timeline, with the anatomy callouts beside it.
+    story: { x: -0.6, y: -0.04, height: 0.66, tilt: 0 },
+    // Left column of "Pick a bottle", beside the flavour details and controls.
+    experience: { x: -0.46, y: -0.04, height: 0.7, tilt: 0 },
   },
   tablet: {
-    hero: { x: 0.45, y: -0.1, height: 0.66, tilt: 0.05 },
-    story: { x: -0.55, y: 0, height: 0.6, tilt: -0.12 },
-    experience: { x: 0, y: 0.28, height: 0.5, tilt: 0 },
+    hero: { x: 0.46, y: -0.12, height: 0.6, tilt: 0 },
+    story: { x: -0.56, y: 0, height: 0.56, tilt: 0 },
+    experience: { x: 0, y: 0.36, height: 0.42, tilt: 0 },
   },
   mobile: {
-    hero: { x: 0.12, y: -0.34, height: 0.48, tilt: 0.08 },
-    story: { x: 0.62, y: -0.2, height: 0.5, tilt: -0.18 },
-    experience: { x: 0, y: 0.34, height: 0.44, tilt: 0 },
+    hero: { x: 0.5, y: -0.54, height: 0.36, tilt: 0 },
+    story: { x: 0.7, y: -0.2, height: 0.42, tilt: -0.1 },
+    experience: { x: 0, y: 0.4, height: 0.4, tilt: 0 },
   },
 };

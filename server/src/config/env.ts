@@ -6,7 +6,7 @@ const schema = z.object({
   PORT: z.coerce.number().int().positive().default(5050),
   DATABASE_URL: z.string().url({ message: 'DATABASE_URL must be a postgresql:// connection string' }),
   /** Comma-separated list of origins allowed to call the API. */
-  CORS_ORIGIN: z.string().default('http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173'),
+  CORS_ORIGIN: z.string().default('http://localhost:5273,http://localhost:4173,http://127.0.0.1:5273,http://127.0.0.1:4173'),
   /** Contact form submissions allowed per IP in each window. */
   CONTACT_RATE_LIMIT: z.coerce.number().int().positive().default(5),
   CONTACT_RATE_WINDOW_MINUTES: z.coerce.number().int().positive().default(15),

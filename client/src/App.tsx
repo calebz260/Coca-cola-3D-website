@@ -4,7 +4,6 @@ import { Stage } from './components/Stage';
 import { useStageChoreography } from './hooks/useStageChoreography';
 import { BrandMoments } from './sections/BrandMoments';
 import { Contact } from './sections/Contact';
-import { Experience } from './sections/Experience';
 import { Hero } from './sections/Hero';
 import { Products } from './sections/Products';
 import { Story } from './sections/Story';
@@ -26,7 +25,6 @@ function Page() {
         <Hero />
         <Story />
         <Products />
-        <Experience />
         <BrandMoments />
         <Contact />
       </main>

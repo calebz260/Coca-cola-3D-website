@@ -1,5 +1,22 @@
 import { useMemo } from 'react';
 
+/**
+ * True when WebGL is drawn by the CPU (SwiftShader, llvmpipe, a VM with no GPU). Heavy shaders such as
+ * the black hole run at seconds per frame there and starve everything else, so they are skipped.
+ */
+export function isSoftwareRenderer(): boolean {
+  try {
+    const gl = document.createElement('canvas').getContext('webgl');
+    if (!gl) return false;
+    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    const name = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) ?? '') : '';
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    return /swiftshader|llvmpipe|softpipe|software|microsoft basic/i.test(name);
+  } catch {
+    return false;
+  }
+}
+
 export type StageQuality = 'high' | 'lite' | 'none';
 
 interface NavigatorHints extends Navigator {

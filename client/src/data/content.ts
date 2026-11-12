@@ -2,7 +2,7 @@ import type { SectionId, StoryMoment, Variant } from '../types/content';
 
 export const NAV_ITEMS: { id: SectionId; label: string }[] = [
   { id: 'home', label: 'Home' },
-  { id: 'story', label: 'Our Story' },
+  { id: 'story', label: 'Our story' },
   { id: 'products', label: 'Products' },
   { id: 'experience', label: 'Experience' },
   { id: 'contact', label: 'Contact' },
@@ -17,7 +17,8 @@ export const VARIANTS: Variant[] = [
     label: '#E3101F',
     ink: '#FFFFFF',
     cap: '#E3101F',
-    liquid: '#2a0c04',
+    liquid: '#4c0a04',
+    print: '#FFFFFF',
   },
   {
     id: 'zero',
@@ -27,7 +28,8 @@ export const VARIANTS: Variant[] = [
     label: '#0a0a0a',
     ink: '#E3101F',
     cap: '#1a1a1a',
-    liquid: '#2a0c04',
+    liquid: '#4c0a04',
+    print: '#F4F4F4',
   },
   {
     id: 'cherry',
@@ -37,7 +39,8 @@ export const VARIANTS: Variant[] = [
     label: '#6E0B2A',
     ink: '#FFFFFF',
     cap: '#6E0B2A',
-    liquid: '#2e0a08',
+    liquid: '#46060e',
+    print: '#FFE3EA',
   },
   {
     id: 'vanilla',
@@ -47,7 +50,8 @@ export const VARIANTS: Variant[] = [
     label: '#EFE2C6',
     ink: '#6B2A10',
     cap: '#C9A66B',
-    liquid: '#301206',
+    liquid: '#521a08',
+    print: '#F6EAD2',
   },
 ];
 

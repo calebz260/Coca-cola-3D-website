@@ -17,9 +17,7 @@ interface Props {
 /** Flat illustration of the same contour profile used by the 3D model. */
 export function BottleSilhouette({ variant, className, title }: Props) {
   const id = useId().replace(/:/g, '');
-  const labelY = flip(LABEL_RANGE[1]);
-  const labelH = LABEL_RANGE[1] - LABEL_RANGE[0];
-  const ribbonY = labelY + labelH * 0.74;
+  const letterY = flip((LABEL_RANGE[0] + LABEL_RANGE[1]) / 2) + 0.06;
   return (
     <svg
       viewBox={`0 ${-CAP} 1 ${BOTTLE_HEIGHT + CAP}`}
@@ -43,18 +41,23 @@ export function BottleSilhouette({ variant, className, title }: Props) {
         </linearGradient>
       </defs>
       <g clipPath={`url(#${id}-clip)`}>
-        <rect x="0" y="0" width="1" height={BOTTLE_HEIGHT} fill="#cfe8da" opacity="0.3" />
+        <rect x="0" y="0" width="1" height={BOTTLE_HEIGHT} fill="#1d3a2a" opacity="0.55" />
         <rect x="0" y={flip(FILL_HEIGHT)} width="1" height={FILL_HEIGHT} fill={variant.liquid} />
-        <rect x="0" y={labelY} width="1" height={labelH} fill={variant.label} />
-        <path
-          d={`M0 ${ribbonY} Q0.25 ${ribbonY - 0.07} 0.5 ${ribbonY} T1 ${ribbonY}`}
-          stroke={variant.ink}
-          strokeWidth="0.028"
-          fill="none"
-        />
+        <text
+          x="0.5"
+          y={letterY}
+          textAnchor="middle"
+          fontFamily="Yellowtail, 'Brush Script MT', cursive"
+          fontSize="0.2"
+          textLength="0.66"
+          lengthAdjust="spacingAndGlyphs"
+          fill={variant.print}
+        >
+          Coca-Cola
+        </text>
         <rect x="0" y="0" width="1" height={BOTTLE_HEIGHT} fill={`url(#${id}-shine)`} />
       </g>
-      <rect x="0.33" y={-CAP + 0.04} width="0.34" height="0.14" rx="0.02" fill={variant.cap} />
+      <rect x="0.27" y={-CAP + 0.1} width="0.46" height="0.15" rx="0.025" fill={variant.cap} />
     </svg>
   );
 }

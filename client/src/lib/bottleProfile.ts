@@ -5,30 +5,58 @@
  */
 const OUTLINE: [number, number][] = [
   [0.0, 0.0],
-  [0.34, 0.0],
-  [0.4, 0.05],
-  [0.42, 0.18],
-  [0.42, 0.46],
-  [0.4, 0.72],
-  [0.355, 0.96],
-  [0.335, 1.1], // waist
-  [0.36, 1.3],
-  [0.405, 1.55],
-  [0.42, 1.76],
-  [0.4, 1.98],
-  [0.34, 2.22],
-  [0.26, 2.46],
-  [0.19, 2.7],
-  [0.155, 2.9],
-  [0.148, 3.0],
-  [0.165, 3.04],
-  [0.165, 3.1],
-  [0.14, 3.12],
+  [0.37, 0.0],
+  [0.415, 0.035],
+  [0.435, 0.16],
+  [0.44, 0.36], // lower bulge
+  [0.428, 0.6],
+  [0.405, 0.86],
+  [0.398, 1.0], // waist
+  [0.41, 1.18],
+  [0.432, 1.4],
+  [0.44, 1.64], // upper bulge (lettering band)
+  [0.428, 1.88],
+  [0.39, 2.1],
+  [0.33, 2.28],
+  [0.268, 2.46],
+  [0.226, 2.62],
+  [0.209, 2.8],
+  [0.205, 2.95],
+  [0.222, 2.99], // lip
+  [0.222, 3.06],
+  [0.2, 3.09],
 ];
 
-export const BOTTLE_HEIGHT = 3.12;
-export const FILL_HEIGHT = 2.5;
-export const LABEL_RANGE: [number, number] = [0.3, 0.88];
+export const BOTTLE_HEIGHT = 3.09;
+/** Cola reaches the bottom of the neck, as in a freshly opened bottle. */
+export const FILL_HEIGHT = 2.56;
+/** Smooth band between the flutes where the lettering is printed on the glass. */
+export const LABEL_RANGE: [number, number] = [1.3, 1.95];
+
+const FLUTES = 12;
+const FLUTE_DEPTH = 0.04;
+
+const ramp = (a: number, b: number, v: number) => Math.max(0, Math.min(1, (v - a) / (b - a)));
+
+/**
+ * How strongly the vertical flutes show at a height: full on the lower body and the
+ * shoulder, smooth in the lettering band, fading out at the base and into the neck.
+ */
+export function fluteWeight(y: number): number {
+  const [lo, hi] = LABEL_RANGE;
+  const below = ramp(0.06, 0.22, y) * (1 - ramp(lo - 0.14, lo, y));
+  const above = ramp(hi, hi + 0.14, y) * (1 - ramp(2.3, 2.58, y));
+  return Math.max(below, above);
+}
+
+/** Radial scale for the flutes at an angle around the bottle (1 = no change). */
+export function fluteScale(y: number, angle: number): number {
+  const w = fluteWeight(y);
+  if (w === 0) return 1;
+  // Rounded ribs with narrow grooves between them.
+  const rib = Math.pow(Math.abs(Math.cos((angle * FLUTES) / 2)), 0.5);
+  return 1 - FLUTE_DEPTH * w * (1 - rib);
+}
 
 function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number) {
   const t2 = t * t;

@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { radiusAt } from '../../lib/bottleProfile';
+import { fluteScale, radiusAt } from '../../lib/bottleProfile';
 
 interface Props {
   count: number;
@@ -16,11 +16,12 @@ export function Condensation({ count, chilled }: Props) {
   const drops = useMemo(
     () =>
       Array.from({ length: count }, () => {
-        const y = 0.12 + Math.random() * 2.1;
+        // Mostly on the body, thinning out up the neck, like the photo of a cold bottle.
+        const y = 0.06 + Math.random() ** 1.25 * 2.86;
         return {
           y,
           angle: Math.random() * Math.PI * 2,
-          size: 0.006 + Math.random() ** 2 * 0.022,
+          size: 0.0035 + Math.random() ** 4 * 0.026,
           stretch: 1 + Math.random() * 0.6,
           threshold: Math.random(),
         };
@@ -35,7 +36,7 @@ export function Condensation({ count, chilled }: Props) {
     if (Math.abs(next - amount.current) < 1e-4 && mesh.current.userData.ready) return;
     amount.current = next;
     drops.forEach((d, i) => {
-      const r = radiusAt(d.y) * 1.003;
+      const r = radiusAt(d.y) * fluteScale(d.y, d.angle) * 1.004;
       const visible = Math.max(0, Math.min(1, (amount.current - d.threshold * 0.7) * 3));
       dummy.position.set(Math.sin(d.angle) * r, d.y, Math.cos(d.angle) * r);
       dummy.lookAt(dummy.position.x * 2, d.y, dummy.position.z * 2);
@@ -56,7 +57,7 @@ export function Condensation({ count, chilled }: Props) {
         metalness={0}
         clearcoat={1}
         transparent
-        opacity={0.55}
+        opacity={0.38}
         envMapIntensity={2.2}
       />
     </instancedMesh>

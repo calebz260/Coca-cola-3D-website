@@ -9,8 +9,8 @@ const base =
 
 const tones: Record<Tone, string> = {
   light: 'bg-paper text-signal hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-12px_rgba(0,0,0,0.6)]',
-  red: 'bg-signal text-paper hover:bg-signal-deep hover:-translate-y-0.5',
-  ghost: 'text-paper ring-2 ring-paper/70 ring-inset hover:bg-paper hover:text-ink',
+  red: 'bg-signal text-paper hover:bg-signal-deep hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-12px_rgba(229,17,46,0.7)]',
+  ghost: 'text-paper ring-1 ring-paper/60 ring-inset hover:bg-paper hover:text-ink',
 };
 
 export function buttonClass(tone: Tone = 'light', extra = '') {

@@ -38,7 +38,7 @@ function FlatStage({ loading }: { loading: boolean }) {
         const vh = window.innerHeight;
         const h = rig.height * vh;
         const x = (rig.x * window.innerWidth) / 2;
-        const y = (-rig.y * vh) / 2 + rig.intro * vh;
+        const y = (-(rig.y + rig.lift) * vh) / 2 + rig.intro * vh;
         node.style.height = `${h}px`;
         node.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${-rig.tilt}rad)`;
       }
